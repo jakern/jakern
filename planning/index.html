@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Planning</title>
+        <script type="text/javascript">
+            var blocks = ["a","b","c","d","e","f","g"]
+            var ready = [];
+            var stuck = [];
+            var world = [["a","b","c","d","e","f","g"],[],[],[]];
+            var bkWorld = world.slice(0);
+            var dest = [["a","b","c","d","e","f","g"],[],[],[]];
+            var cmds = [];
+
+            function on(x,y) {
+                for (var i = 0; i < world.length; i++) {
+                    var stack = world[i];
+                    if (stack.indexOf(y) != -1) {
+                        break;
+                    }
+                }
+                if (stack.indexOf(x) == stack.indexOf(y) + 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function clear(x) {
+                for (var i = 0; i < world.length; i++) {
+                    var stack = world[i];
+                    if (stack.indexOf(x) != -1) {
+                        break;
+                    }
+                }
+                if (stack.indexOf(x) == stack.length - 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function misplaced(x) {
+                for (var i = 0; i < world.length; i++) {
+                    var wStack = world[i];
+                    if (wStack.indexOf(x) != -1) {
+                        break;
+                    }
+                }
+
+                for (var i = 0; i < dest.length; i++) {
+                    var dStack = dest[i];
+                    if (dStack.indexOf(x) != -1) {
+                        break;
+                    }
+                }
+
+                if (wStack.indexOf(x) != dStack.indexOf(x)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function isReady(x) {
+                if (ready.indexOf(x) != -1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function makeReady(x) {
+                var index = blocks.indexOf(x);
+                ready.push(blocks[index]);
+                if (index > -1) {
+                    blocks.splice(index, 1);
+                }
+            }
+
+            function isStuck(x) {
+                if (stuck.indexOf(x) != -1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function getL(x) {
+                for (var i = 0; i < world.length; i++) {
+                    var stack = world[i];
+                    if (stack.indexOf(x) != -1) {
+                        return i;
+                    }
+                }
+            }
+
+            function getD(x) {
+                for (var i = 0; i < dest.length; i++) {
+                    var stack = dest[i];
+                    if (stack.indexOf(x) != -1) {
+                        return i;
+                    }
+                }
+            }
+
+            function move(x, l) {
+                if (clear(x) && !isStuck(x)) {
+                    // console.log("move "+x+" to "+l);
+                    cmds.push({text: x, l: l})
+                    world[l].push(world[getL(x)].pop());
+                    // printWorld();
+                    // console.log("now looks like: ", world);
+                    // console.dir( world);
+                    // test();
+                } else{
+                    throw Error("cannot move block " + x + " to " + l);
+                }
+            }
+
+            function makeStuck(x) {
+                var index = blocks.indexOf(x);
+                if (blocks[index] !== undefined) {
+                    stuck.push(blocks[index]);
+                } else {
+                    throw Error("Tried to stick undefined")
+                }
+                if (index > -1) {
+                    blocks.splice(index, 1);
+                }
+                // console.log("pieces in place: ", stuck);
+            }
+
+            function moveAllLeft() {
+                for (var i = 1; i < world.length; i++) {
+                    var stack = world[i];
+                    for (var j = stack.length - 1; j >= 0; j--) {
+                        if (! isStuck(stack[j])) {
+                            move(stack[j], 0);
+                        }
+                    }
+                }
+            }
+
+            function moveAllRight() {
+                for (var i = 0; i < world.length; i++) {
+                    var stack = world[i];
+                    if (i < 3) {
+                        for (var j = stack.length - 1; j >= 0; j--) {
+                            if (! isStuck(stack[j])) {
+                                move(stack[j], 3);
+                            }
+                        }
+                    }
+                }
+            }
+
+            function stickCorrect() {
+                for (var i = 0; i < world.length; i++) {
+                    for (var j = 0; j < world[i].length; j++) {
+                        if (world[i][j] != dest[i][j]) {
+                            break;
+                        } else {
+                            makeStuck(world[i][j]);
+                        }
+                    }
+                }
+            }
+
+            function run() {
+
+                // console.log("Planning...");
+                // stuck = [];
+                // cmds = [];
+                stickCorrect();
+                moveAllLeft();
+
+                // last two stacks
+                for (var i = world.length - 1; i > 1; i--) {
+                    for (var t = 0; t < dest[i].length; t++) {
+                        var stack = world[0];
+                        for (var j = stack.length - 1; j >= 0; j--) {
+                            var peek = stack[j];
+                            var target = dest[i][t];
+                            if (peek == target && peek !== undefined) {
+                                move(peek, i);
+                                makeStuck(peek);
+                                break;
+                            } else  {
+                                move(peek, 1);
+                            }
+                        }
+                        // stickCorrect();
+                        moveAllLeft();
+                    }
+                }
+
+                if(! test()) {
+                    moveAllRight();
+                    for (var i = 1; i >= 0; i--) {
+                        var stack = world[3];
+                        for (var t = 0; t < dest[i].length; t++) {
+                            for (var j = stack.length - 1; j >= 0; j--) {
+                                if (stuck.indexOf(stack[j]) === -1) { // if not stuck
+                                    var peek = stack[j];
+                                } else {
+                                    break;
+                                }
+                                var peek = stack[j];
+                                var target = dest[i][t];
+                                if (peek == target && peek !== undefined) {
+                                    move(peek, i);
+                                    makeStuck(peek);
+                                    break;
+                                } else  {
+                                    move(peek, 2);
+                                }
+                            }
+                            // stickCorrect();
+                            moveAllRight();
+                        }
+                    }
+                }
+                planReady();
+            }
+
+            function build() {
+                world = bkWorld;
+                buildWorld();
+                var c = -1;
+                setNext();
+                function setNext() {
+                    if (c < cmds.length - 1) {
+                        c++;
+                        var cmd = cmds[c]
+                        var picked = svg.selectAll("rect")
+                            .filter(function(d) {return d.text === cmd.text});
+
+                        picked.transition().duration(200)
+                            .attr("y", function(d) {
+                                return 0;
+                            })
+                          .transition()
+                            .attr("x", function(d) {
+                                d.l = cmd.l;
+                                d.i = world[d.l].length;
+                                buildWorld();
+                                d.x = d.l * 55;
+                                // console.log("set x");
+                                return (d.x);
+                            })
+                          .transition()
+                            .attr("y", function(d) {
+                                d.y = height - (55 * ( d.i + 1 ));
+                                return (d.y);
+                            })
+                            .each("end", setNext)
+
+                            if(test()) {
+                                buildDone();
+                            }
+                    }
+                }
+            }
+
+            function test() {
+                for (var i = 0; i < world.length; i++) {
+                    for (var j = 0; j < world[i].length; j++) {
+                        if (world[i][j] != dest[i][j]) {
+                            return false;
+                        }
+                    }
+                }
+                return true
+            }
+
+            function printWorld() {
+                for (var i = 0; i < world.length; i++) {
+                    var stack = world[i];
+                    console.log(i, stack.toString());
+                    // for (var j = 0; j < world[i].length; j++) {
+                    //     console.log(world[i,j].);
+                }
+            }
+        </script>
+        <script src="d3.v3.min.js"></script>
+        <style>
+
+            * {
+                box-sizing: border-box;
+            }
+
+            #planReady , #buildDone{
+                visibility: hidden;
+                min-width: 250px;
+                margin-left: -125px;
+                color: #fff;
+                text-align: center;
+                border-radius: 2px;
+                padding: 16px;
+                position: fixed;
+                z-index: 1;
+                left: 50%;
+                bottom: 30px;
+                font-size: 17px;
+            }
+
+            #buildDone {
+                background-color: #5cb85c;
+            }
+            #planReady {
+                background-color: #333;
+            }
+
+            #planReady.show , #buildDone.show {
+                visibility: visible;
+                -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+                animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            }
+
+            #instructions {
+                width: 400px;
+            }
+
+            @-webkit-keyframes fadein {
+                from {bottom: 0; opacity: 0;}
+                to {bottom: 30px; opacity: 1;}
+            }
+
+            @keyframes fadein {
+                from {bottom: 0; opacity: 0;}
+                to {bottom: 30px; opacity: 1;}
+            }
+
+            @-webkit-keyframes fadeout {
+                from {bottom: 30px; opacity: 1;}
+                to {bottom: 0; opacity: 0;}
+            }
+
+            @keyframes fadeout {
+                from {bottom: 30px; opacity: 1;}
+                to {bottom: 0; opacity: 0;}
+            }
+
+            input[type=button] {
+                background-color: #333; /* Green */
+                border: none;
+                color: white;
+                padding: 15px 32px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="instructions">
+            <p>The following is and example of a planning algorithm. The user may
+             drag and drop the stacks of blocks in the Source and Destination
+             areas. When the Solve button is click the algorithm will run to
+             calculate the sequence of moves needed to move the blocks in the
+             Source section to the positions in the Destination by only stacking
+             and unstacking blocks.
+            </p>
+
+            <p>When the Build button is clicked the computed steps are graphically
+            executed.</p>
+
+            <p>Notes: The Steps must be solved before it can be built. The
+            algorithm can only be run once before the page must be refreshed.</p>
+        </div>
+        <div id="body"></div>
+        <div id="planReady">Plan Ready!</div>
+        <div id="buildDone">Done!</div>
+
+
+        <script type="text/javascript">
+            var r = 50
+                tableSize = 4,
+                numBlocks = blocks.length,
+                width = (r+5)*tableSize,
+                height = (r+5)*numBlocks + 20,
+                resolution = 20;
+
+            var BLOCKS = blocks.slice().map(function(d, i,j) {
+                return {
+                    text: d,
+                    x: 0,
+                    y: 0,
+                    l: 0,
+                    i: 0
+                }
+            });
+
+            var c10 = d3.scale.category10();
+
+            var svg = d3.select('#body').append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .style("margin-right", "20px")
+
+
+            var drag = d3.behavior.drag()
+                .origin(function(d) { return d; })
+                .on('drag', dragged)
+                .on('dragend', dragendded)
+
+            function dragged(d) {
+                var coords = d3.mouse(svg.node());
+                d.l = Math.floor((coords[0])/(55));
+                if (d.l < 0) {
+                    d.l = 0;
+                } else if ( d.l > (tableSize - 1)) {
+                    d.l = tableSize - 1;
+                }
+                var posY = Math.floor(coords[1]/55)
+                if (posY < 0) {
+                    posY = 0;
+                } else if (posY > (numBlocks - 1)) {
+                    posY = numBlocks - 1;
+                }
+
+                d.i = (numBlocks - 1 - posY);
+
+                d.x = d.l * 55;
+                d.y = (posY * 55) + 20;
+                d3.select(this)
+                    .attr("x", d.x)
+                    .attr("y", d.y);
+            }
+
+            function dragendded(d) {
+                buildWorld();
+            }
+
+            function buildWorld() {
+                data = [[],[],[],[]];
+                BLOCKS.sort(function(a,b) {return a.i - b.i}).sort(function(a,b) {return a.l - b.l});
+                for (var i = 0; i < BLOCKS.length; i++) {
+                    var b = BLOCKS[i];
+                    data[b.l].push(b.text);
+                }
+                world = data;
+                // console.log("WORLD: " , world);
+
+            }
+
+            var blks = svg.selectAll("rect")
+                .data(BLOCKS)
+              .enter().append("rect")
+                .attr("fill", function (d,i) {
+                    return c10(d.text);
+                })
+                .attr("width", r)
+                .attr("height", r)
+                .attr("x", function(d,i,j) {
+                    d.l = getL(d.text);
+                    d.i = world[d.l].indexOf(d.text);
+                    d.x = d.l * 55;
+                    return (d.x);
+                })
+                .attr("y", function(d,i,j) {
+                    d.y = height - (55 * ( d.i + 1 ));
+                    return (d.y);
+                })
+                .call(drag)
+
+            svg.append("text")
+                .attr("x", (width / 2))
+                .attr("y",  16 )
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .text("Source");
+
+            ////////DESTINATION??????
+            var DESTBLOCKS = blocks.slice().map(function(d, i,j) {
+                return {
+                    text: d,
+                    x: 0,
+                    y: 0,
+                    l: 0,
+                    i: 0
+                }
+            });
+
+            var drag2 = d3.behavior.drag()
+                .origin(function(d) { return d; })
+                .on('drag', dragged2)
+                .on('dragend', dragendded2)
+
+            function dragendded2(d) {
+                buildDest();
+            }
+
+            function dragged2(d) {
+                var coords = d3.mouse(svgDest.node());
+                d.l = Math.floor((coords[0])/(55));
+                if (d.l < 0) {
+                    d.l = 0;
+                } else if ( d.l > (tableSize - 1)) {
+                    d.l = tableSize - 1;
+                }
+                var posY = Math.floor(coords[1]/55)
+                if (posY < 0) {
+                    posY = 0;
+                } else if (posY > (numBlocks - 1)) {
+                    posY = numBlocks - 1;
+                }
+
+                d.i = (numBlocks - 1 - posY);
+
+                d.x = d.l * 55;
+                d.y = (posY * 55) + 20;
+
+                d3.select(this)
+                    .attr("x", d.x)
+                    .attr("y", d.y);
+            }
+
+            function buildDest() {
+                data = [[],[],[],[]];
+                DESTBLOCKS.sort(function(a,b) {return a.i - b.i}).sort(function(a,b) {return a.l - b.l});
+                for (var i = 0; i < DESTBLOCKS.length; i++) {
+                    var b = DESTBLOCKS[i];
+                    data[b.l].push(b.text);
+                }
+                dest = data;
+            }
+
+            var svgDest = d3.select('#body').append('svg')
+                .attr('width', width)
+                .attr('height', height)
+
+            var blksDest = svgDest.selectAll("rect")
+                .data(DESTBLOCKS)
+                .enter().append("rect")
+                  .attr("fill", function (d,i) {
+                      return c10(d.text);
+                  })
+                  .attr("width", r)
+                  .attr("height", r)
+                  .attr("x", function(d,i,j) {
+                      d.l = getD(d.text);
+                      d.i = dest[d.l].indexOf(d.text);
+                      d.x = d.l * 55;
+                      return (d.x);
+                  })
+                  .attr("y", function(d,i,j) {
+                      d.y = height - (55 * ( d.i + 1 ));
+                      return (d.y);
+                  })
+                  .call(drag2)
+
+            svgDest.append("text")
+                .attr("x", (width / 2))
+                .attr("y",  16 )
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .text("Destination");
+
+        </script>
+
+
+        <input type="button" name="solve" value="Solve" onclick=run()>
+        <input type="button" name="build" value="Build" onclick=build()>
+
+        <script>
+            function planReady() {
+                var x = document.getElementById("planReady")
+                x.className = "show";
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+            }
+            function buildDone() {
+                var x = document.getElementById("buildDone")
+                x.className = "show";
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 10000);
+            }
+        </script>
+    </body>
+</html>
