@@ -1056,15 +1056,16 @@
 
   .label {
     display: inline;
-    font-size: 150%;
+    font-size: 125%;
     padding: .2em .6em .3em;
     color: #ffffff;
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
     border-radius: .25em;
-    margin-right:. 3em;
-    background-color: #337ab3
+    margin-right: .3em;
+    background-color: #337ab3;
+    line-height: 2.2em;
   }
 
 /* Nav */
@@ -1595,3 +1596,8 @@
 					}
 
 	}
+
+/* my Custom */
+ul.copyright {
+ text-shadow: 1px 1px 0px black;
+}
