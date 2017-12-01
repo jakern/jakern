@@ -4,28 +4,26 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
 <url>
   <loc>https://jkern.me/</loc>
-  <lastmod>2017-08-22T00:51:57+00:00</lastmod>
-  <changefreq>weekly</changefreq>
+  <lastmod>2017-12-01T00:54:28+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
   <loc>https://jkern.me/airpen/</loc>
-  <lastmod>2017-08-22T00:51:57+00:00</lastmod>
-  <changefreq>weekly</changefreq>
+  <lastmod>2017-11-04T19:38:05+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://jkern.me/primes/</loc>
-  <lastmod>2017-08-22T00:51:57+00:00</lastmod>
-  <changefreq>weekly</changefreq>
+  <lastmod>2017-11-20T02:44:29+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://jkern.me/planning/</loc>
-  <lastmod>2017-08-22T00:51:57+00:00</lastmod>
-  <changefreq>weekly</changefreq>
+  <lastmod>2017-11-20T02:41:26+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 </urlset>
