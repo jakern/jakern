@@ -1,0 +1,96 @@
+<html>
+<style>
+.watch {
+width: 100%;
+height: 2em;
+color: #6441a5;
+font-family: sans-serif;
+background: #eaeaea;
+font-weight: 200;
+text-align: center;
+}
+
+						/* The sidebar menu */
+						.sidenav {
+							    height: 100%; /* Full-height: remove this if you want "auto" height */
+								        width: 20%; /* Set the width of the sidebar */
+										    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+											        z-index: 1; /* Stay on top */
+													    top: 0; /* Stay at the top */
+														        left: 0;
+																    background-color: #111; /* Black */
+																	        overflow-x: hidden; /* Disable horizontal scroll */
+																			    padding-top: 20px;
+						}
+
+						/* The navigation menu links */
+						.sidenav a { 
+							    padding: 6px 8px 6px 16px;
+								        text-decoration: none;
+										    font-size: 26px;
+											        color: #818181;
+													    display: block;
+						}
+
+						/* When you mouse over the navigation links, change their color */
+						.sidenav a:hover {
+							    color: #f1f1f1;
+						}
+
+						/* Style page content */
+						.main {
+							    margin-left: 20%; /* Same as the width of the sidebar */
+								        padding: 0px 10px;
+						}
+
+						/* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+						@media screen and (max-height: 450px) {
+							    .sidenav {padding-top: 15px;}
+							        .sidenav a {font-size: 18px;}
+						}
+</style>
+	  <body>
+		  <div class='sidenav' id='sidebar'>
+
+		</div>
+		      <!-- Add a placeholder for the Twitch embed -->
+		          <div class="main" id="twitch-embed"></div>
+
+			      <!-- Load the Twitch embed script -->
+			          <script src="https://embed.twitch.tv/embed/v1.js"></script>
+
+				      <!--
+		        Create a Twitch.Embed object that will render
+			      within the "twitch-embed" root element.
+			          -->
+				      <script type="text/javascript">
+      var embed = new Twitch.Embed("twitch-embed", {
+	              width: 854,
+		              height: 480,
+			              channel: "monstercat",
+				              layout: "video",
+					              autoplay: false
+							            });
+
+      embed.addEventListener(Twitch.Embed.VIDEO_READY, () => {
+	              var player = embed.getPlayer();
+		              player.play();
+			            });
+
+let watch = channel => embed.getPlayer().setChannel(channel);
+
+	let team_members = ['ItzJonzey', 'TheMadB1shop', 'Piinncchh', 'DeterminedDonut', 'BynamicDylan', 'CountlessMortem', 'LordNax', 'DoctorWhorible'];
+	let sidebar = document.getElementById('sidebar');
+
+
+	team_members.forEach(function(member) {
+			let s = '<iframe src="https://streambadge.com/twitch/light/'+member+'/" style="border:none;height:4em;width:100%"></iframe><div class="watch">Watch '+member+ ' now!</div>';
+				var temp = document.createElement('div');
+					temp.innerHTML = s;
+						temp.onclick = function() { embed.getPlayer().setChannel(member);}
+							sidebar.appendChild(temp);
+
+	})
+    </script>
+      </body>
+</html>
