@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+	<!-- Vue.JS -->
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
+	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+	<script src="//cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
+	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+	<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.17.0/vuedraggable.min.js"></script>
+	<style>
+		.notransition {
+			-webkit-transition: none !important;
+			-moz-transition: none !important;
+			-ms-transition: none !important;
+			-o-transition: none !important;
+			transition: none !important;
+		}​
+	</style>
+  </head>
+  <body>
+	<div class="container col-6" id="timer" >
+		<div class="jumbotron">
+			<h1>{{ label }}</h1>
+			<h1 class="">{{ timeLeft }}</h1>
+			<div class="progress">
+			  <div class="progress-bar notransition"  v-bind:style="{width: calcTimeWidth() + '%'}"></div>
+			</div>
+		</div>
+		<div>
+			<button class="btn btn-primary" v-show="paused" onclick="timer.pause()">play</button>
+			<button class="btn btn-default" v-show="!paused" onclick="timer.pause()">pause</button>
+			<button class="btn btn-default" onclick="timer.reset()">reset</button>
+		</div>
+		<draggable class="list-group" v-model="steps">
+		   <div class="list-group-item" v-for="step in steps">
+				<input v-model.trim="step.label" type="text" ></input>
+				<input v-model.number="step.duration" type="number" ></input>
+			</div>
+		</draggable>
+		<div>
+			<button class="btn btn-success" onclick="timer.addStep()">+</button>
+			<button class="btn btn-danger" onclick="timer.removeStep()">-</button>
+		</div>
+
+	</div>
+	<script>
+
+		var timer = new Vue({
+		  el: '#timer',
+		  data: {
+			steps: [
+			],
+			timerIndex:0,
+			timeLeft:0,
+			timer: null,
+			label:"Click Start",
+			paused: true,
+			started: false
+		  },
+		  mounted() {
+			if (localStorage.getItem('steps')) {
+			  try {
+				this.steps = JSON.parse(localStorage.getItem('steps'));
+			  } catch(e) {
+				localStorage.removeItem('steps');
+			  }
+			}
+		  },
+		  methods: {
+			pause(event) {
+				if (  ! this.started ) {
+					this.label = this.steps[this.timerIndex].label;
+					this.timeLeft = this.steps[this.timerIndex].duration - 1;
+					this.timer = setInterval(() => this.countdown(), 10);
+					this.started = true;
+					this.paused = false;
+				} else {
+					if ( ! this.paused ) {
+						clearInterval(this.timer);
+						this.timer = null;
+						this.paused = true;
+					} else {
+						this.timer = setInterval(() => this.countdown(), 10);
+						this.paused = false;
+					}
+				}	
+			},
+			reset(event) {
+				clearInterval(this.timer);
+				this.timer = null;
+				this.timerIndex = 0;
+				this.timeLeft = 0;
+				this.label = "Click Start";
+				this.started = false;
+				this.paused = true;
+			},
+			complete() {
+				this.reset();
+				alert("DONE!");
+			},
+			calcTimeWidth() {
+				if (! this.started ) {
+					return 100;
+				}	
+				return (this.timeLeft / (this.steps[this.timerIndex].duration)) * 100;
+			},
+			countdown() {
+				this.calcTimeWidth();
+				if ( this.timeLeft <= 0) {
+					this.timerIndex++;
+					if (this.timerIndex >= this.steps.length) {
+						this.complete();
+					}
+					this.label = this.steps[this.timerIndex].label;
+					this.timeLeft = this.steps[this.timerIndex].duration;
+				}
+				this.timeLeft--;
+			},
+			addStep() {
+			    this.steps.push({label:'',duration:0})
+			    this.saveSteps();
+			},
+			removeStep() {
+			  this.steps.pop();
+			  this.saveSteps();
+			},
+			saveSteps() {
+			  const parsed = JSON.stringify(this.steps);
+			  localStorage.setItem('steps', parsed);
+			}
+		  }
+		})
+	</script>
+  </body>
+</html>
