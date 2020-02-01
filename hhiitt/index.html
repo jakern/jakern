@@ -26,7 +26,7 @@
 	</style>
   </head>
   <body>
-	<div class="container col-6" id="timer" >
+	<div class="container" id="timer" >
 		<div class="jumbotron">
 			<h1>{{ label }}</h1>
 			<h1 class="">{{ timeLeft | toInt }}</h1>
@@ -36,23 +36,19 @@
 		</div>
         <div class="mb-3">
             <button class="btn btn-primary" v-show="paused" onclick="timer.toggle()">Start</button>
-            <button class="btn btn-default" v-show="!paused" onclick="timer.toggle()">Pause</button>
+            <button class="btn btn-dark" v-show="!paused" onclick="timer.toggle()">Pause</button>
             <button class="btn btn-default" id="resetButton" onclick="timer.reset()">Reset</button>
-            <div class="float-right">
-                <button class="btn btn-default" onclick="timer.steps=faster">Load Run Faster Workout</button>
-                <button class="btn btn-default" onclick="timer.steps=longer">Load Run Longer Workout</button>
-            </div>
         </div>
-		<draggable class="list-group" v-model="steps">
+		<draggable class="list-group-flush" v-model="steps">
 		   <div class="list-group-item" v-for="(step, index) in steps">
-               <div  class="input-group input-group-lg">
+               <div  class="input-group input-group">
                    <div class="input-group-prepend">
-                       <label class="input-group-text" for="">⇅</label>
+                        <label class="input-group-text" for="">⇅</label>
                    </div>
-                   <input class="form-control" @change="saveSteps()" v-model.trim="step.label" type="text"></input>
+                   <input class="form-control" @input="saveSteps()" v-model.trim="step.label" type="text">
                    <div class="input-group-append">
-                       <input class="" @change="saveSteps()" v-model.number="step.duration" type="number" ></input>
-                       			<button class="btn btn-danger" @click="removeStep(index)">-</button>
+                        <input class="" style="width: 60px" @input="saveSteps()" v-model.number="step.duration" type="number" >
+                       	<button class="btn btn-danger" @click="removeStep(index)">-</button>
                    </div>
                </div>
 			</div>
@@ -60,6 +56,10 @@
 		<div>
 			<button class="btn btn-light btn-lg btn-block" @click="addStep()">+</button>
 		</div>
+        <div>
+            <button class="btn btn-default" onclick="timer.steps=faster">Load Run Faster Workout</button>
+            <button class="btn btn-default" onclick="timer.steps=longer">Load Run Longer Workout</button>
+        </div>
 	</div>
 	<script>
 
