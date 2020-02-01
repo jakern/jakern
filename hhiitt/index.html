@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8"> 
+    <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
@@ -12,9 +12,9 @@
 	<!-- Vue.JS -->
 	<script src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
 	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
-	<script src="//cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
 	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
-	<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.17.0/vuedraggable.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.17.0/vuedraggable.min.js"></script>
 	<style>
 		.notransition {
 			-webkit-transition: none !important;
@@ -29,30 +29,61 @@
 	<div class="container col-6" id="timer" >
 		<div class="jumbotron">
 			<h1>{{ label }}</h1>
-			<h1 class="">{{ timeLeft }}</h1>
+			<h1 class="">{{ timeLeft | toInt }}</h1>
 			<div class="progress">
 			  <div class="progress-bar notransition"  v-bind:style="{width: calcTimeWidth() + '%'}"></div>
 			</div>
 		</div>
 		<div>
-			<button class="btn btn-primary" v-show="paused" onclick="timer.pause()">play</button>
-			<button class="btn btn-default" v-show="!paused" onclick="timer.pause()">pause</button>
-			<button class="btn btn-default" onclick="timer.reset()">reset</button>
+			<button class="btn btn-primary" v-show="paused" onclick="timer.toggle()">Start</button>
+			<button class="btn btn-default" v-show="!paused" onclick="timer.toggle()">Pause</button>
+			<button class="btn btn-default" id="resetButton" onclick="timer.reset()">Reset</button>
 		</div>
+        <!---<div class="input-group input-group-lg">
+            <div class="form-control">Action</div>
+            <div class="form-control">Seconds</div>
+        </div>--->
 		<draggable class="list-group" v-model="steps">
 		   <div class="list-group-item" v-for="step in steps">
-				<input v-model.trim="step.label" type="text" ></input>
-				<input v-model.number="step.duration" type="number" ></input>
+               <div  class="input-group input-group-lg">
+                   <input class="form-control" onchange="timer.saveSteps()" v-model.trim="step.label" type="text" ></input>
+                   <div class="input-group-append">
+                       <input class="" onchange="timer.saveSteps()" v-model.number="step.duration" type="number" ></input>
+                      <!--- <label class="input-group-text" for="">Seconds</label> --->
+                   </div>
+               </div>
 			</div>
 		</draggable>
 		<div>
 			<button class="btn btn-success" onclick="timer.addStep()">+</button>
 			<button class="btn btn-danger" onclick="timer.removeStep()">-</button>
 		</div>
+        <div>
+            <button class="btn btn-default" onclick="timer.steps=faster">Load Run Faster Workout</button>
+            <button class="btn btn-default" onclick="timer.steps=longer">Load Run Longer Workout</button>
+        </div>
 
 	</div>
 	<script>
 
+        var faster = [
+            {"label": "High Knees", "duration": 30}
+            ,{"label": "Jumping Squats", "duration": 30}
+            ,{"label": "Jumping Lunges", "duration": 30}
+            ,{"label": "Calf Raises", "duration": 30}
+            ,{"label": "Climbers", "duration": 30}
+            ,{"label": "Judo Push-ups", "duration": 30}
+            ,{"label": "Rest", "duration": 90}
+            ];
+        var longer = [
+            {"label": "Jumping Jacks", "duration": 30}
+            ,{"label": "Side Leg Raises", "duration": 30}
+            ,{"label": "Deep Side Lunges", "duration": 30}
+            ,{"label": "Arm/Leg Raises", "duration": 30}
+            ,{"label": "Single Leg Bridges", "duration": 30}
+            ,{"label": "Windshield Wipers", "duration": 30}
+            ,{"label": "Rest", "duration": 60}
+            ];
 		var timer = new Vue({
 		  el: '#timer',
 		  data: {
@@ -65,6 +96,11 @@
 			paused: true,
 			started: false
 		  },
+          filters: {
+              toInt: function(value) {
+                  return Math.ceil(value);
+              }
+          },
 		  mounted() {
 			if (localStorage.getItem('steps')) {
 			  try {
@@ -75,10 +111,10 @@
 			}
 		  },
 		  methods: {
-			pause(event) {
+			toggle(event) {
 				if (  ! this.started ) {
 					this.label = this.steps[this.timerIndex].label;
-					this.timeLeft = this.steps[this.timerIndex].duration - 1;
+					this.timeLeft = this.steps[this.timerIndex].duration;
 					this.timer = setInterval(() => this.countdown(), 10);
 					this.started = true;
 					this.paused = false;
@@ -91,7 +127,7 @@
 						this.timer = setInterval(() => this.countdown(), 10);
 						this.paused = false;
 					}
-				}	
+				}
 			},
 			reset(event) {
 				clearInterval(this.timer);
@@ -103,17 +139,18 @@
 				this.paused = true;
 			},
 			complete() {
-				this.reset();
+                var x = document.getElementById("resetButton");
+				x.onclick();
 				alert("DONE!");
 			},
 			calcTimeWidth() {
 				if (! this.started ) {
 					return 100;
-				}	
-				return (this.timeLeft / (this.steps[this.timerIndex].duration)) * 100;
+				}
+				return (this.timeLeft / (this.steps[this.timerIndex].duration)) * 100 ;
 			},
 			countdown() {
-				this.calcTimeWidth();
+				/* this.calcTimeWidth(); */
 				if ( this.timeLeft <= 0) {
 					this.timerIndex++;
 					if (this.timerIndex >= this.steps.length) {
@@ -122,7 +159,7 @@
 					this.label = this.steps[this.timerIndex].label;
 					this.timeLeft = this.steps[this.timerIndex].duration;
 				}
-				this.timeLeft--;
+				this.timeLeft-=0.01;
 			},
 			addStep() {
 			    this.steps.push({label:'',duration:0})
