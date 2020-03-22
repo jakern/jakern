@@ -39,10 +39,10 @@
             <button class="btn btn-dark" v-show="!paused" onclick="timer.toggle()">Pause</button>
             <button class="btn btn-default" id="resetButton" onclick="timer.reset()">Reset</button>
         </div>
-		<draggable class="list-group-flush" v-model="steps">
+		<draggable class="list-group-flush" v-model="steps" handle=".handle">
 		   <div class="list-group-item" v-for="(step, index) in steps">
                <div  class="input-group input-group">
-                   <div class="input-group-prepend">
+                   <div class="input-group-prepend handle">
                         <label class="input-group-text" for="">⇅</label>
                    </div>
                    <input class="form-control" @input="saveSteps()" v-model.trim="step.label" type="text">
@@ -60,6 +60,7 @@
             <button class="btn btn-default" onclick="timer.steps=faster">Load Run Faster Workout</button>
             <button class="btn btn-default" onclick="timer.steps=longer">Load Run Longer Workout</button>
         </div>
+        <div><a href="https://darebee.com">DAREBEE</a> I will integrate this into all of your workouts if you please just use it.</div>
 	</div>
 	<script>
 
